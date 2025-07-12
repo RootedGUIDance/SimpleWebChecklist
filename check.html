@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Blue Box Disappearing App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    #boxes {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .box {
+      width: 40px;
+      height: 40px;
+      background-color: blue;
+      cursor: pointer;
+      border-radius: 4px;
+      /* Make sure transform origin is center for smooth spinning */
+      transform-origin: center;
+      transition: transform 0.6s ease, opacity 0.6s ease;
+    }
+    /* Spin and fade animation */
+    .spin-fade {
+      animation: spinFadeOut 0.6s forwards;
+    }
+    @keyframes spinFadeOut {
+      to {
+        transform: rotate(1080deg) scale(0);
+        opacity: 0;
+      }
+    }
+    button, input[type="number"] {
+      font-size: 16px;
+      padding: 6px 12px;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Blue Box Disappearing App</h1>
+  <label for="numBoxes">How many boxes?</label>
+  <input type="number" id="numBoxes" min="1" max="100" />
+  <button id="generateBtn">Generate</button>
+  <button id="resetBtn" disabled>Start Over</button>
+
+  <div id="boxes"></div>
+
+  <script>
+    const generateBtn = document.getElementById('generateBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const boxesContainer = document.getElementById('boxes');
+    const numBoxesInput = document.getElementById('numBoxes');
+
+    generateBtn.addEventListener('click', () => {
+      const num = parseInt(numBoxesInput.value);
+      if (isNaN(num) || num < 1) {
+        alert('Please enter a valid number greater than 0');
+        return;
+      }
+
+      boxesContainer.innerHTML = '';
+
+      for (let i = 0; i < num; i++) {
+        const box = document.createElement('div');
+        box.classList.add('box');
+
+        box.addEventListener('click', () => {
+          // Add animation class
+          box.classList.add('spin-fade');
+          // Remove after animation completes (600ms)
+          setTimeout(() => {
+            box.remove();
+            if (boxesContainer.children.length === 0) {
+              resetBtn.disabled = true;
+            }
+          }, 600);
+        });
+
+        boxesContainer.appendChild(box);
+      }
+
+      resetBtn.disabled = false;
+    });
+
+    resetBtn.addEventListener('click', () => {
+      boxesContainer.innerHTML = '';
+      resetBtn.disabled = true;
+      numBoxesInput.value = '';
+    });
+  </script>
+</body>
+</html>
