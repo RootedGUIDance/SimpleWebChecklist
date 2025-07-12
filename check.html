@@ -6,7 +6,6 @@
   <title>Box Clicker</title>
 
   <style>
-    /* -------- Base Layout Styles -------- */
     body {
       font-family: Arial, sans-serif;
       background: #111;
@@ -45,7 +44,6 @@
       background-color: #0056b3;
     }
 
-    /* -------- Container for the boxes -------- */
     #box-container {
       display: flex;
       flex-wrap: wrap;
@@ -55,47 +53,38 @@
       max-width: 600px;
     }
 
-    /* -------- Styling for each clickable box -------- */
     .box {
       width: 40px;
       height: 40px;
       background-color: #007BFF;
       border-radius: 6px;
       cursor: pointer;
-      /* Entry animation when box first appears */
       animation: popIn 0.4s ease;
     }
 
-    /* Animation on hover: pulsing effect and glow */
     .box:hover {
       box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
     }
 
-    /* Animation applied when box is clicked */
     .spin-fade {
       animation: spinFadeOut 0.3s forwards;
     }
 
-    /* -------- Keyframes for animations -------- */
-
-    /* Entry animation when box is created */
     @keyframes popIn {
-      from {
-        transform: scale(0);
-        opacity: 0;
-      }
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes spinFadeOut {
       to {
-        transform: scale(1);
-        opacity: 1;
+        transform: rotate(360deg) scale(0);
+        opacity: 0;
       }
     }
 
-    /* Exit animation: spin, shrink, and fade out */
-    @keyframes spinFadeOut {
-      to {
-        transform: rotate(1080deg) scale(0);
-        opacity: 0;
-      }
+    #stats {
+      margin-top: 20px;
+      font-size: 18px;
     }
   </style>
 </head>
@@ -103,55 +92,66 @@
 <body>
   <h1>Box Clicker</h1>
 
-  <!-- Input and buttons section -->
+  <!-- Input and control buttons -->
   <div>
-    <!-- User enters number of boxes to generate -->
-    <input type="number" id="box-count" min="1" placeholder="Count">
-
-    <!-- Button to generate boxes -->
+    <input type="number" id="box-count" min="1" placeholder="Count" />
     <button onclick="generateBoxes()">Go</button>
-
-    <!-- Button to clear everything and start over -->
     <button onclick="resetBoxes()">Start Over</button>
   </div>
 
-  <!-- Container where the boxes will be added -->
+  <!-- Where boxes appear -->
   <div id="box-container"></div>
 
+  <!-- Display average time -->
+  <div id="stats">Average time between clicks: <span id="avg-time">--</span> sec</div>
+
   <script>
-    // Function to generate boxes based on user input
+    let lastClickTime = null;
+    let timeDiffs = [];
+
     function generateBoxes() {
       const container = document.getElementById('box-container');
       const count = parseInt(document.getElementById('box-count').value) || 0;
-
-      // Clear any existing boxes
       container.innerHTML = '';
+      document.getElementById('avg-time').textContent = '--';
+      timeDiffs = [];
+      lastClickTime = Date.now(); // Start the timer from box generation
 
-      // Create each box
       for (let i = 0; i < count; i++) {
         const box = document.createElement('div');
         box.classList.add('box');
 
-        // Add click event to each box
         box.addEventListener('click', () => {
-          // Add spin-fade animation class
-          box.classList.add('spin-fade');
+          const now = Date.now();
 
-          // After animation ends, remove box from DOM
-          box.addEventListener('animationend', () => {
-            box.remove();
-          });
+          if (lastClickTime !== null) {
+            const diff = (now - lastClickTime) / 1000; // in seconds
+            timeDiffs.push(diff);
+            updateAverageTime();
+          }
+          lastClickTime = now;
+
+          box.classList.add('spin-fade');
+          box.addEventListener('animationend', () => box.remove());
         });
 
-        // Add the box to the container
         container.appendChild(box);
       }
     }
 
-    // Function to reset the UI
     function resetBoxes() {
-      document.getElementById('box-container').innerHTML = ''; // Clear boxes
-      document.getElementById('box-count').value = '';         // Clear input
+      document.getElementById('box-container').innerHTML = '';
+      document.getElementById('box-count').value = '';
+      document.getElementById('avg-time').textContent = '--';
+      timeDiffs = [];
+      lastClickTime = null;
+    }
+
+    function updateAverageTime() {
+      if (timeDiffs.length === 0) return;
+      const sum = timeDiffs.reduce((a, b) => a + b, 0);
+      const avg = sum / timeDiffs.length;
+      document.getElementById('avg-time').textContent = avg.toFixed(2);
     }
   </script>
 </body>
